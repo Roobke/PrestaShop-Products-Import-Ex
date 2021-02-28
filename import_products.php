@@ -41,10 +41,12 @@
 	$results = Db::getInstance()->ExecuteS("SELECT p.id_product, p.ean13 FROM "._DB_PREFIX_."product p WHERE p.ean13 IS NOT NULL AND p.ean13 != ''");
 	$existing_products = array();
 	
-	foreach ($results as $result) {
-		$existing_products[$result['id_product']] = $result['ean13'];
+	if (count($results)) {
+		foreach ($results as $result) {
+			$existing_products[$result['id_product']] = $result['ean13'];
+		}
 	}
-	
+
 	#Import or update products:
 	$config = array(
         'indent'     => true,
@@ -106,11 +108,8 @@
 					$image->id_product = $new_product->id;
 					$image->position = Image::getHighestPosition($new_product->id) + 1;
 					
-					if (Image::getImagesTotal($new_product->id) > 0) {
-						$image->cover = false;
-					} else {
-						$image->cover = true;
-					}
+					if (Image::getImagesTotal($new_product->id) > 0) $image->cover = false;
+					else $image->cover = true;
 					
 					if (($image->validateFields(false, true)) === true && ($image->validateFieldsLang(false, true)) === true && $image->add()) {
 						$image->associateTo($shops);
